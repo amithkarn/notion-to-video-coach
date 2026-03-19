@@ -66,8 +66,17 @@ const Index: React.FC = () => {
           </div>
         </div>
 
-        {/* Generate / Play button */}
-        <div>
+        {/* Action buttons */}
+        <div className="flex items-center gap-2">
+          {hasGenerated && mode === 'slides' && (
+            <button
+              onClick={handleGenerate}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-colors"
+            >
+              <Sparkles className="h-4 w-4" />
+              Regenerate
+            </button>
+          )}
           {!hasGenerated ? (
             <button
               onClick={handleGenerate}
