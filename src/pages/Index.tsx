@@ -1,30 +1,23 @@
 import React, { useState, useCallback } from 'react';
-import { Block, Slide, EditorMode } from '@/types/editor';
-import { generateId } from '@/lib/generateId';
-import { generateSlidesFromBlocks } from '@/lib/slideGenerator';
+import { Slide, EditorMode } from '@/types/editor';
+import { generateSlidesFromContent } from '@/lib/slideGenerator';
 import { PageEditor } from '@/components/editor/PageEditor';
 import { PresentationEditor } from '@/components/slides/PresentationEditor';
 import { PlaybackMode } from '@/components/playback/PlaybackMode';
 import { FileText, Presentation, Play, Video, Sparkles } from 'lucide-react';
 
-const initialBlocks: Block[] = [
-  { id: generateId(), type: 'heading', content: 'Welcome to SlideForge' },
-  { id: generateId(), type: 'text', content: 'Start writing your content here. Use "/" to add different block types like headings, text, images, and math equations.' },
-  { id: generateId(), type: 'text', content: 'When you\'re ready, click "Generate Video" to transform your document into a narrated slide presentation.' },
-];
-
 const Index: React.FC = () => {
   const [mode, setMode] = useState<EditorMode>('page');
-  const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
+  const [content, setContent] = useState<string>('');
   const [slides, setSlides] = useState<Slide[]>([]);
   const [hasGenerated, setHasGenerated] = useState(false);
 
   const handleGenerate = useCallback(() => {
-    const generated = generateSlidesFromBlocks(blocks);
+    const generated = generateSlidesFromContent(content);
     setSlides(generated);
     setHasGenerated(true);
     setMode('slides');
-  }, [blocks]);
+  }, [content]);
 
   const handlePlay = useCallback(() => {
     if (slides.length > 0) {
@@ -98,7 +91,9 @@ const Index: React.FC = () => {
       {/* Content area */}
       <main className="flex-1 overflow-auto">
         {mode === 'page' ? (
-          <PageEditor blocks={blocks} onBlocksChange={setBlocks} />
+          <div className="max-w-4xl mx-auto py-8">
+            <PageEditor value={content} onChange={setContent} />
+          </div>
         ) : (
           <PresentationEditor slides={slides} onSlidesChange={setSlides} />
         )}

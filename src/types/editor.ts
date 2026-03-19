@@ -4,7 +4,6 @@ export interface Block {
   id: string;
   type: BlockType;
   content: string;
-  // For images: content = URL, for math: content = LaTeX
 }
 
 export interface Slide {
