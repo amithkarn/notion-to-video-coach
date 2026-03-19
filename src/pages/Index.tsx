@@ -4,7 +4,8 @@ import { generateSlidesFromContent } from '@/lib/slideGenerator';
 import { PageEditor } from '@/components/editor/PageEditor';
 import { PresentationEditor } from '@/components/slides/PresentationEditor';
 import { PlaybackMode } from '@/components/playback/PlaybackMode';
-import { FileText, Presentation, Play, Video, Sparkles } from 'lucide-react';
+import { FileText, Presentation, Play, Video, Sparkles, BookOpen } from 'lucide-react';
+import { newtonsLawsContent } from '@/lib/exampleContent';
 
 const Index: React.FC = () => {
   const [mode, setMode] = useState<EditorMode>('page');
@@ -24,6 +25,12 @@ const Index: React.FC = () => {
       setMode('playback');
     }
   }, [slides]);
+
+  const handleLoadExample = useCallback(() => {
+    setContent(JSON.stringify(newtonsLawsContent));
+  }, []);
+
+  const isEditorEmpty = !content || content === '' || content === '{"type":"doc","content":[{"type":"paragraph"}]}';
 
   if (mode === 'playback') {
     return <PlaybackMode slides={slides} onExit={() => setMode('slides')} />;
@@ -100,7 +107,19 @@ const Index: React.FC = () => {
       {/* Content area */}
       <main className="flex-1 overflow-auto">
         {mode === 'page' ? (
-          <div className="max-w-4xl mx-auto py-8">
+          <div className="max-w-4xl mx-auto py-8 relative">
+            {/* Example bubble - shown when editor is empty */}
+            {isEditorEmpty && (
+              <div className="flex justify-center mb-6">
+                <button
+                  onClick={handleLoadExample}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-card text-sm font-medium text-foreground shadow-sm hover:shadow-md hover:border-primary/40 hover:bg-accent transition-all duration-200"
+                >
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  Newton's III Laws of Motion
+                </button>
+              </div>
+            )}
             <PageEditor value={content} onChange={setContent} />
           </div>
         ) : (
