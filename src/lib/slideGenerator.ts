@@ -1,28 +1,71 @@
-import { Block, Slide } from '@/types/editor';
+import { Slide } from '@/types/editor';
 import { generateId } from './generateId';
 
 /**
- * Smart slide generation from blocks.
- * Rules:
- * - A heading starts a new slide
- * - Text blocks under a heading group into same slide
- * - Images group with nearby text
- * - Long slides get split
+ * Smart slide generation from TipTap JSON content.
  */
 const MAX_TEXT_LENGTH_PER_SLIDE = 600;
 
-export function generateSlidesFromBlocks(blocks: Block[]): Slide[] {
+interface TiptapNode {
+  type: string;
+  attrs?: Record<string, any>;
+  content?: TiptapNode[];
+  text?: string;
+}
+
+function extractText(node: TiptapNode): string {
+  if (node.text) return node.text;
+  if (!node.content) return '';
+  return node.content.map(extractText).join('');
+}
+
+interface SlideBlock {
+  type: 'heading' | 'text' | 'image' | 'math';
+  content: string;
+}
+
+function tiptapToBlocks(doc: TiptapNode): SlideBlock[] {
+  const blocks: SlideBlock[] = [];
+  if (!doc.content) return blocks;
+
+  for (const node of doc.content) {
+    if (node.type === 'heading') {
+      blocks.push({ type: 'heading', content: extractText(node) });
+    } else if (node.type === 'paragraph') {
+      const text = extractText(node);
+      if (text.trim()) blocks.push({ type: 'text', content: text });
+    } else if (node.type === 'bulletList' || node.type === 'orderedList') {
+      const items = (node.content || []).map(li => '• ' + extractText(li)).join('\n');
+      if (items.trim()) blocks.push({ type: 'text', content: items });
+    } else if (node.type === 'imageBlock') {
+      blocks.push({ type: 'image', content: node.attrs?.src || '' });
+    } else if (node.type === 'mathBlock') {
+      blocks.push({ type: 'math', content: node.attrs?.latex || '' });
+    }
+  }
+  return blocks;
+}
+
+export function generateSlidesFromContent(jsonContent: string): Slide[] {
+  let doc: TiptapNode;
+  try {
+    doc = JSON.parse(jsonContent);
+  } catch {
+    return [];
+  }
+
+  const blocks = tiptapToBlocks(doc);
   if (blocks.length === 0) return [];
 
   const slides: Slide[] = [];
-  let currentBlocks: Block[] = [];
+  let currentBlocks: SlideBlock[] = [];
   let currentTextLength = 0;
 
   const flushSlide = () => {
     if (currentBlocks.length > 0) {
       slides.push({
         id: generateId(),
-        blocks: [...currentBlocks],
+        blocks: currentBlocks.map(b => ({ id: generateId(), ...b })),
         speech: generateSpeech(currentBlocks),
       });
       currentBlocks = [];
@@ -42,7 +85,6 @@ export function generateSlidesFromBlocks(blocks: Block[]): Slide[] {
       currentBlocks.push(block);
       currentTextLength += block.content.length;
     } else {
-      // image or math — attach to current slide
       currentBlocks.push(block);
     }
   }
@@ -51,10 +93,8 @@ export function generateSlidesFromBlocks(blocks: Block[]): Slide[] {
   return slides;
 }
 
-function generateSpeech(blocks: Block[]): string {
-  // Simple speech generation — in production this would be AI-powered
+function generateSpeech(blocks: SlideBlock[]): string {
   const parts: string[] = [];
-  
   for (const block of blocks) {
     if (block.type === 'heading') {
       parts.push(`Let's talk about ${block.content}.`);
@@ -66,6 +106,5 @@ function generateSpeech(blocks: Block[]): string {
       parts.push('As you can see in this illustration.');
     }
   }
-
   return parts.join(' ');
 }
