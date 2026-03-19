@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, KeyboardEvent } from 'react';
+import React, { useRef, useEffect, useCallback, KeyboardEvent } from 'react';
 import { Block } from '@/types/editor';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -26,6 +26,7 @@ export const EditorBlock: React.FC<EditorBlockProps> = ({
   onDelete,
 }) => {
   const editableRef = useRef<HTMLDivElement>(null);
+  const isInitializedRef = useRef(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
 
   const style = {
@@ -34,10 +35,26 @@ export const EditorBlock: React.FC<EditorBlockProps> = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // Set initial content only once (not on every render)
+  useEffect(() => {
+    if (editableRef.current && !isInitializedRef.current) {
+      editableRef.current.textContent = block.content;
+      isInitializedRef.current = true;
+    }
+  }, []);
+
+  // Sync content from parent only when block.id changes (new block)
+  useEffect(() => {
+    isInitializedRef.current = false;
+    if (editableRef.current) {
+      editableRef.current.textContent = block.content;
+      isInitializedRef.current = true;
+    }
+  }, [block.id]);
+
   useEffect(() => {
     if (isFocused && editableRef.current && block.type !== 'image') {
       editableRef.current.focus();
-      // Place cursor at end
       const range = document.createRange();
       const sel = window.getSelection();
       if (editableRef.current.childNodes.length > 0) {
@@ -49,17 +66,16 @@ export const EditorBlock: React.FC<EditorBlockProps> = ({
     }
   }, [isFocused, block.type]);
 
-  const handleInput = () => {
+  const handleInput = useCallback(() => {
     if (editableRef.current) {
       const text = editableRef.current.textContent || '';
       onUpdate(text);
     }
-  };
+  }, [onUpdate]);
 
-  const handleKeyDownInternal = (e: KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDownInternal = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
     const text = editableRef.current?.textContent || '';
 
-    // Detect slash command
     if (e.key === '/' && text === '') {
       e.preventDefault();
       const rect = editableRef.current!.getBoundingClientRect();
@@ -68,7 +84,7 @@ export const EditorBlock: React.FC<EditorBlockProps> = ({
     }
 
     onKeyDown(e);
-  };
+  }, [onKeyDown, onSlashCommand]);
 
   const handleImageUpload = () => {
     const url = prompt('Enter image URL:');
@@ -107,7 +123,6 @@ export const EditorBlock: React.FC<EditorBlockProps> = ({
       style={style}
       className="group flex items-start gap-1 py-1 rounded-lg relative"
     >
-      {/* Drag handle */}
       <div
         {...attributes}
         {...listeners}
@@ -116,7 +131,6 @@ export const EditorBlock: React.FC<EditorBlockProps> = ({
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      {/* Block content */}
       <div className="block-content flex-1 min-w-0">
         {block.type === 'image' ? (
           <div className="py-2">
@@ -156,9 +170,7 @@ export const EditorBlock: React.FC<EditorBlockProps> = ({
               onInput={handleInput}
               onKeyDown={handleKeyDownInternal}
               onFocus={onFocus}
-            >
-              {block.content}
-            </div>
+            />
           </div>
         ) : (
           <div
@@ -174,13 +186,10 @@ export const EditorBlock: React.FC<EditorBlockProps> = ({
             onInput={handleInput}
             onKeyDown={handleKeyDownInternal}
             onFocus={onFocus}
-          >
-            {block.content}
-          </div>
+          />
         )}
       </div>
 
-      {/* Delete button */}
       <button
         onClick={onDelete}
         className="mt-1 p-1 opacity-0 group-hover:opacity-40 hover:!opacity-100 text-destructive rounded transition-opacity"
