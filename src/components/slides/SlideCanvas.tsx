@@ -7,6 +7,7 @@ interface SlideCanvasProps {
   selectedBlockIds?: Set<string>;
   onBlockClick?: (blockId: string, event: React.MouseEvent) => void;
   activeHighlightWord?: string | null;
+  playbackMode?: boolean;
 }
 
 const layoutClasses: Record<string, string> = {
