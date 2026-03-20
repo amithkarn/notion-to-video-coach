@@ -24,7 +24,7 @@ interface SlideBlock {
   content: string;
 }
 
-function tiptapToBlocks(doc: TiptapNode): SlideBlock[] {
+export function tiptapToBlocks(doc: TiptapNode): SlideBlock[] {
   const blocks: SlideBlock[] = [];
   if (!doc.content) return blocks;
 
