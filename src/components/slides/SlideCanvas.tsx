@@ -15,9 +15,13 @@ const layoutClasses: Record<string, string> = {
   'title-top': 'justify-start items-start text-left pt-12',
 };
 
-/** Get unique highlighted words for this slide */
-function getHighlightedWords(highlights: SpeechHighlight[]): string[] {
-  const words = new Set(highlights.map(h => h.word.toLowerCase()));
+/** Get highlighted words for a specific block */
+function getHighlightedWordsForBlock(highlights: SpeechHighlight[], blockId: string): string[] {
+  const words = new Set(
+    highlights
+      .filter(h => h.blockId === blockId)
+      .map(h => h.word.toLowerCase())
+  );
   return Array.from(words);
 }
 
