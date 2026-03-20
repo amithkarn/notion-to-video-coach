@@ -41,6 +41,17 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
     onSlidesChange(updated);
   };
 
+  const updateLayout = (layout: SlideLayout) => {
+    const updated = slides.map((s, i) => (i === currentIndex ? { ...s, layout } : s));
+    onSlidesChange(updated);
+  };
+
+  const layouts: { value: SlideLayout; icon: React.ReactNode; label: string }[] = [
+    { value: 'default', icon: <AlignLeft className="h-3.5 w-3.5" />, label: 'Left' },
+    { value: 'centered', icon: <AlignCenter className="h-3.5 w-3.5" />, label: 'Center' },
+    { value: 'title-top', icon: <AlignVerticalJustifyStart className="h-3.5 w-3.5" />, label: 'Top' },
+  ];
+
   return (
     <div className="flex h-full">
       {/* Sidebar - full height */}
