@@ -29,7 +29,8 @@ function renderTextWithHighlights(
   text: string,
   blockId: string,
   highlights: SpeechHighlight[],
-  activeWord: string | null
+  activeWord: string | null,
+  playbackMode: boolean
 ): React.ReactNode {
   const ranges = getBlockHighlightRanges(highlights, blockId);
   if (ranges.length === 0) return text;
