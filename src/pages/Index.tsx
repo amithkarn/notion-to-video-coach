@@ -123,7 +123,7 @@ const Index: React.FC = () => {
             <PageEditor value={content} onChange={setContent} />
           </div>
         ) : (
-          <PresentationEditor slides={slides} onSlidesChange={setSlides} />
+          <PresentationEditor slides={slides} onSlidesChange={setSlides} pageContent={content} />
         )}
       </main>
     </div>
