@@ -15,9 +15,13 @@ const layoutClasses: Record<string, string> = {
   'title-top': 'justify-start items-start text-left pt-12',
 };
 
-/** Get unique highlighted words for this slide */
-function getHighlightedWords(highlights: SpeechHighlight[]): string[] {
-  const words = new Set(highlights.map(h => h.word.toLowerCase()));
+/** Get highlighted words for a specific block */
+function getHighlightedWordsForBlock(highlights: SpeechHighlight[], blockId: string): string[] {
+  const words = new Set(
+    highlights
+      .filter(h => h.blockId === blockId)
+      .map(h => h.word.toLowerCase())
+  );
   return Array.from(words);
 }
 
@@ -66,7 +70,7 @@ function renderTextWithHighlights(
 export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockIds, onBlockClick, activeHighlightWord }) => {
   const layout = slide.layout || 'default';
   const isInteractive = !!onBlockClick;
-  const highlightedWords = getHighlightedWords(slide.speechHighlights || []);
+  const highlights = slide.speechHighlights || [];
   const activeWord = activeHighlightWord ?? null;
 
   return (
@@ -86,11 +90,13 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           onBlockClick?.(block.id, e);
         };
 
+        const blockHighlightedWords = getHighlightedWordsForBlock(highlights, block.id);
+
         if (block.type === 'heading') {
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <h2 className="text-3xl font-bold mb-4 text-foreground">
-                {renderTextWithHighlights(block.content, highlightedWords, activeWord)}
+                {renderTextWithHighlights(block.content, blockHighlightedWords, activeWord)}
               </h2>
             </div>
           );
@@ -99,7 +105,7 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <p className="text-lg leading-relaxed mb-3 text-foreground/80">
-                {renderTextWithHighlights(block.content, highlightedWords, activeWord)}
+                {renderTextWithHighlights(block.content, blockHighlightedWords, activeWord)}
               </p>
             </div>
           );

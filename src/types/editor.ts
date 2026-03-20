@@ -7,6 +7,7 @@ export interface SpeechHighlight {
   startIndex: number;
   endIndex: number;
   word: string;
+  blockId?: string;
 }
 
 export interface Block {

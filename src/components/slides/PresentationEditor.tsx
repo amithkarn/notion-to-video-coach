@@ -173,7 +173,33 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
   };
 
   const updateHighlights = (speechHighlights: SpeechHighlight[]) => {
-    const updated = slides.map((s, i) => (i === currentIndex ? { ...s, speechHighlights } : s));
+    // Enrich new highlights with blockId by matching word to block content
+    const enriched = speechHighlights.map(h => {
+      if (h.blockId) return h;
+      const word = h.word.toLowerCase();
+      // Find blocks that contain this word
+      const matchingBlocks = currentSlide.blocks.filter(
+        b => (b.type === 'heading' || b.type === 'text') && 
+             new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(b.content)
+      );
+      // If only one block matches, assign it; otherwise try to use speech context
+      if (matchingBlocks.length === 1) {
+        return { ...h, blockId: matchingBlocks[0].id };
+      } else if (matchingBlocks.length > 1) {
+        // Use surrounding context from speech to disambiguate
+        const surroundingText = currentSlide.speech.slice(Math.max(0, h.startIndex - 30), h.endIndex + 30);
+        const bestMatch = matchingBlocks.find(b => {
+          // Check if surrounding speech text overlaps with block content
+          const blockWords = b.content.toLowerCase().split(/\s+/);
+          const contextWords = surroundingText.toLowerCase().split(/\s+/);
+          const overlap = contextWords.filter(w => blockWords.includes(w)).length;
+          return overlap >= 3;
+        });
+        return { ...h, blockId: bestMatch?.id || matchingBlocks[0].id };
+      }
+      return h;
+    });
+    const updated = slides.map((s, i) => (i === currentIndex ? { ...s, speechHighlights: enriched } : s));
     onSlidesChange(updated);
   };
 
