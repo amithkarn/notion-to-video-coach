@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Slide, SlideLayout } from '@/types/editor';
+import { Slide, SlideLayout, SpeechHighlight } from '@/types/editor';
 import { SlideCanvas } from './SlideCanvas';
+import { SpeechEditor } from './SpeechEditor';
 import { BlockToolbar } from './BlockToolbar';
 import { ChevronLeft, ChevronRight, AlignLeft, AlignCenter, AlignVerticalJustifyStart } from 'lucide-react';
 import { tiptapToBlocks } from '@/lib/slideGenerator';
