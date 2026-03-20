@@ -42,10 +42,9 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-1 min-h-0">
-        {/* Sidebar */}
-        <div className="w-64 border-r border-border flex flex-col bg-surface-sunken">
+    <div className="flex h-full">
+      {/* Sidebar - full height */}
+      <div className="w-64 border-r border-border flex flex-col bg-surface-sunken shrink-0">
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
             {sidebarView === 'slides' ? (
               slides.map((slide, i) => (
