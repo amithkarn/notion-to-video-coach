@@ -158,8 +158,28 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
 
         {/* Right content area */}
         <div className="flex-1 flex flex-col min-h-0">
+          {/* Layout picker */}
+          <div className="flex items-center justify-end px-8 pt-4">
+            <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
+              {layouts.map((l) => (
+                <button
+                  key={l.value}
+                  onClick={() => updateLayout(l.value)}
+                  title={l.label}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    currentSlide.layout === l.value
+                      ? 'bg-surface-elevated shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {l.icon}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Main canvas */}
-          <div className="flex-1 flex items-center justify-center bg-secondary/30 p-8">
+          <div className="flex-1 flex items-center justify-center bg-secondary/30 px-8 pb-8 pt-4">
             <div className="w-full max-w-3xl">
               <SlideCanvas slide={currentSlide} />
             </div>
