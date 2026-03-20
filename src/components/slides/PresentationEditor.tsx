@@ -42,10 +42,9 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-1 min-h-0">
-        {/* Sidebar */}
-        <div className="w-64 border-r border-border flex flex-col bg-surface-sunken">
+    <div className="flex h-full">
+      {/* Sidebar - full height */}
+      <div className="w-64 border-r border-border flex flex-col bg-surface-sunken shrink-0">
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
             {sidebarView === 'slides' ? (
               slides.map((slide, i) => (
@@ -146,47 +145,49 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
           </div>
         </div>
 
-        {/* Main canvas */}
-        <div className="flex-1 flex items-center justify-center bg-secondary/30 p-8">
-          <div className="w-full max-w-4xl">
-            <SlideCanvas slide={currentSlide} />
-          </div>
-        </div>
-      </div>
-
-      {/* Speech editor */}
-      <div className="border-t border-border p-4 bg-speech-bg">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">
-              Speech — Slide {currentIndex + 1}
-            </span>
-            <div className="flex gap-1">
-              <button
-                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-                disabled={currentIndex === 0}
-                className="p-1 rounded hover:bg-accent disabled:opacity-30 transition-colors"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setCurrentIndex(Math.min(slides.length - 1, currentIndex + 1))}
-                disabled={currentIndex === slides.length - 1}
-                className="p-1 rounded hover:bg-accent disabled:opacity-30 transition-colors"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
+        {/* Right content area */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Main canvas */}
+          <div className="flex-1 flex items-center justify-center bg-secondary/30 p-8">
+            <div className="w-full max-w-3xl">
+              <SlideCanvas slide={currentSlide} />
             </div>
           </div>
-          <textarea
-            value={currentSlide.speech}
-            onChange={(e) => updateSpeech(e.target.value)}
-            rows={3}
-            className="w-full bg-surface-elevated border border-speech-border rounded-lg p-3 text-sm resize-none outline-none focus:ring-2 focus:ring-ring/20"
-            placeholder="Speech narration for this slide..."
-          />
+
+          {/* Speech editor */}
+          <div className="border-t border-border p-4 bg-speech-bg">
+            <div className="max-w-3xl mx-auto">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Speech — Slide {currentIndex + 1}
+                </span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+                    disabled={currentIndex === 0}
+                    className="p-1 rounded hover:bg-accent disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentIndex(Math.min(slides.length - 1, currentIndex + 1))}
+                    disabled={currentIndex === slides.length - 1}
+                    className="p-1 rounded hover:bg-accent disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <textarea
+                value={currentSlide.speech}
+                onChange={(e) => updateSpeech(e.target.value)}
+                rows={3}
+                className="w-full bg-surface-elevated border border-speech-border rounded-lg p-3 text-sm resize-none outline-none focus:ring-2 focus:ring-ring/20"
+                placeholder="Speech narration for this slide..."
+              />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
   );
 };
