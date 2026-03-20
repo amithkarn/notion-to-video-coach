@@ -69,6 +69,7 @@ export function generateSlidesFromContent(jsonContent: string): Slide[] {
         speech: generateSpeech(currentBlocks),
         sourceNodeIndices: currentBlocks.map(b => b.sourceIndex),
         layout: 'default',
+        speechHighlights: [],
       });
       currentBlocks = [];
       currentTextLength = 0;
