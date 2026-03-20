@@ -340,36 +340,14 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
 
         {/* Speech editor */}
         <div className="border-t border-border p-4 bg-speech-bg">
-          <div className="max-w-3xl mx-auto">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Speech — Slide {currentIndex + 1}
-              </span>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setSelectedBlockIds(new Set()); }}
-                  disabled={currentIndex === 0}
-                  className="p-1 rounded hover:bg-accent disabled:opacity-30 transition-colors"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => { setCurrentIndex(Math.min(slides.length - 1, currentIndex + 1)); setSelectedBlockIds(new Set()); }}
-                  disabled={currentIndex === slides.length - 1}
-                  className="p-1 rounded hover:bg-accent disabled:opacity-30 transition-colors"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            <textarea
-              value={currentSlide.speech}
-              onChange={(e) => updateSpeech(e.target.value)}
-              rows={3}
-              className="w-full bg-surface-elevated border border-speech-border rounded-lg p-3 text-sm resize-none outline-none focus:ring-2 focus:ring-ring/20"
-              placeholder="Speech narration for this slide..."
-            />
-          </div>
+          <SpeechEditor
+            speech={currentSlide.speech}
+            highlights={currentSlide.speechHighlights || []}
+            onSpeechChange={updateSpeech}
+            onHighlightsChange={updateHighlights}
+            slideIndex={currentIndex}
+            slideCount={slides.length}
+          />
         </div>
       </div>
     </div>
