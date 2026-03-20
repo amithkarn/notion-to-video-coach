@@ -65,7 +65,7 @@ function renderTextWithHighlights(
   return parts.length > 0 ? <>{parts}</> : text;
 }
 
-export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockIds, onBlockClick, activeHighlightWord }) => {
+export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockIds, onBlockClick, activeHighlightWord, playbackMode = false }) => {
   const layout = slide.layout || 'default';
   const isInteractive = !!onBlockClick;
   const highlights = slide.speechHighlights || [];
