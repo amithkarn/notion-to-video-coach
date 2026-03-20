@@ -44,11 +44,12 @@ function renderTextWithHighlights(
     }
     const matchedText = text.slice(range.start, range.end);
     const isActive = activeWord && matchedText.toLowerCase() === activeWord.toLowerCase();
+    const showHighlight = playbackMode ? isActive : true;
     parts.push(
       <mark
         key={`${range.start}-${matchedText}`}
-        className={`bg-primary/20 text-inherit rounded-sm px-0.5 transition-all duration-300 ${
-          isActive ? 'bg-primary/50 scale-105 inline-block' : ''
+        className={`text-inherit rounded-sm px-0.5 transition-all duration-300 ${
+          isActive ? 'bg-primary/50 scale-105 inline-block' : showHighlight ? 'bg-primary/20' : 'bg-transparent'
         }`}
       >
         {matchedText}
