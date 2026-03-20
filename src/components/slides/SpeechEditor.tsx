@@ -175,26 +175,6 @@ export const SpeechEditor: React.FC<SpeechEditorProps> = ({
         </span>
       </div>
 
-      {/* Highlight chips */}
-      {highlights.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {highlights.map(h => (
-            <span
-              key={h.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-primary/15 text-primary border border-primary/20"
-            >
-              <Highlighter className="h-3 w-3" />
-              {h.word}
-              <button
-                onClick={() => handleRemoveHighlight(h.id)}
-                className="ml-0.5 hover:text-destructive transition-colors"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
 
       {/* Text area with highlight overlay */}
       <div className="relative">
