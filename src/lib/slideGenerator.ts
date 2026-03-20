@@ -58,34 +58,36 @@ export function generateSlidesFromContent(jsonContent: string): Slide[] {
   if (blocks.length === 0) return [];
 
   const slides: Slide[] = [];
-  let currentBlocks: SlideBlock[] = [];
+  let currentBlocks: (SlideBlock & { sourceIndex: number })[] = [];
   let currentTextLength = 0;
 
   const flushSlide = () => {
     if (currentBlocks.length > 0) {
       slides.push({
         id: generateId(),
-        blocks: currentBlocks.map(b => ({ id: generateId(), ...b })),
+        blocks: currentBlocks.map(b => ({ id: generateId(), type: b.type, content: b.content })),
         speech: generateSpeech(currentBlocks),
+        sourceNodeIndices: currentBlocks.map(b => b.sourceIndex),
       });
       currentBlocks = [];
       currentTextLength = 0;
     }
   };
 
-  for (const block of blocks) {
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
     if (block.type === 'heading') {
       flushSlide();
-      currentBlocks.push(block);
+      currentBlocks.push({ ...block, sourceIndex: i });
       currentTextLength += block.content.length;
     } else if (block.type === 'text') {
       if (currentTextLength + block.content.length > MAX_TEXT_LENGTH_PER_SLIDE && currentBlocks.length > 0) {
         flushSlide();
       }
-      currentBlocks.push(block);
+      currentBlocks.push({ ...block, sourceIndex: i });
       currentTextLength += block.content.length;
     } else {
-      currentBlocks.push(block);
+      currentBlocks.push({ ...block, sourceIndex: i });
     }
   }
 

@@ -10,6 +10,7 @@ export interface Slide {
   id: string;
   blocks: Block[];
   speech: string;
+  sourceNodeIndices: number[];
 }
 
 export interface Presentation {
