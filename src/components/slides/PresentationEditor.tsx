@@ -172,6 +172,11 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
     onSlidesChange(updated);
   };
 
+  const updateHighlights = (speechHighlights: SpeechHighlight[]) => {
+    const updated = slides.map((s, i) => (i === currentIndex ? { ...s, speechHighlights } : s));
+    onSlidesChange(updated);
+  };
+
   const updateLayout = (layout: SlideLayout) => {
     const updated = slides.map((s, i) => (i === currentIndex ? { ...s, layout } : s));
     onSlidesChange(updated);
