@@ -150,7 +150,7 @@ export const PlaybackMode: React.FC<PlaybackModeProps> = ({ slides, onExit }) =>
 
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-5xl">
-          <SlideCanvas slide={currentSlide} activeHighlightWord={activeHighlightWord} />
+          <SlideCanvas slide={currentSlide} activeHighlightWord={activeHighlightWord} playbackMode />
         </div>
       </div>
 

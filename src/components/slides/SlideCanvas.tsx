@@ -7,6 +7,7 @@ interface SlideCanvasProps {
   selectedBlockIds?: Set<string>;
   onBlockClick?: (blockId: string, event: React.MouseEvent) => void;
   activeHighlightWord?: string | null;
+  playbackMode?: boolean;
 }
 
 const layoutClasses: Record<string, string> = {
@@ -28,7 +29,8 @@ function renderTextWithHighlights(
   text: string,
   blockId: string,
   highlights: SpeechHighlight[],
-  activeWord: string | null
+  activeWord: string | null,
+  playbackMode: boolean
 ): React.ReactNode {
   const ranges = getBlockHighlightRanges(highlights, blockId);
   if (ranges.length === 0) return text;
@@ -42,11 +44,12 @@ function renderTextWithHighlights(
     }
     const matchedText = text.slice(range.start, range.end);
     const isActive = activeWord && matchedText.toLowerCase() === activeWord.toLowerCase();
+    const showHighlight = playbackMode ? isActive : true;
     parts.push(
       <mark
         key={`${range.start}-${matchedText}`}
-        className={`bg-primary/20 text-inherit rounded-sm px-0.5 transition-all duration-300 ${
-          isActive ? 'bg-primary/50 scale-105 inline-block' : ''
+        className={`text-inherit rounded-sm px-0.5 transition-all duration-300 ${
+          isActive ? 'bg-primary/50 scale-105 inline-block' : showHighlight ? 'bg-primary/20' : 'bg-transparent'
         }`}
       >
         {matchedText}
@@ -62,7 +65,7 @@ function renderTextWithHighlights(
   return parts.length > 0 ? <>{parts}</> : text;
 }
 
-export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockIds, onBlockClick, activeHighlightWord }) => {
+export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockIds, onBlockClick, activeHighlightWord, playbackMode = false }) => {
   const layout = slide.layout || 'default';
   const isInteractive = !!onBlockClick;
   const highlights = slide.speechHighlights || [];
@@ -89,7 +92,7 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <h2 className="text-3xl font-bold mb-4 text-foreground">
-                {renderTextWithHighlights(block.content, block.id, highlights, activeWord)}
+                {renderTextWithHighlights(block.content, block.id, highlights, activeWord, playbackMode)}
               </h2>
             </div>
           );
@@ -98,7 +101,7 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <p className="text-lg leading-relaxed mb-3 text-foreground/80">
-                {renderTextWithHighlights(block.content, block.id, highlights, activeWord)}
+                {renderTextWithHighlights(block.content, block.id, highlights, activeWord, playbackMode)}
               </p>
             </div>
           );
