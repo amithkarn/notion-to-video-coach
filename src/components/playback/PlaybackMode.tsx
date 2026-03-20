@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Slide } from '@/types/editor';
+import { Slide, SpeechHighlight } from '@/types/editor';
 import { SlideCanvas } from '../slides/SlideCanvas';
 import { Play, Pause, SkipForward, SkipBack, RotateCcw, X } from 'lucide-react';
 
@@ -12,6 +12,7 @@ export const PlaybackMode: React.FC<PlaybackModeProps> = ({ slides, onExit }) =>
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [activeHighlightWord, setActiveHighlightWord] = useState<string | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const progressIntervalRef = useRef<number | null>(null);
 
@@ -23,13 +24,13 @@ export const PlaybackMode: React.FC<PlaybackModeProps> = ({ slides, onExit }) =>
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
     }
+    setActiveHighlightWord(null);
   }, []);
 
   const speakSlide = useCallback((index: number) => {
     stopSpeech();
     const slide = slides[index];
     if (!slide || !slide.speech) {
-      // Auto-advance after short delay if no speech
       setTimeout(() => {
         if (index < slides.length - 1) {
           setCurrentIndex(index + 1);
@@ -45,9 +46,34 @@ export const PlaybackMode: React.FC<PlaybackModeProps> = ({ slides, onExit }) =>
     utterance.pitch = 1;
     utteranceRef.current = utterance;
 
-    // Estimate duration for progress bar
+    const highlights = slide.speechHighlights || [];
+
+    // Track word boundaries for highlight activation
+    if (highlights.length > 0) {
+      utterance.onboundary = (event) => {
+        if (event.name === 'word') {
+          const charIndex = event.charIndex;
+          const charEnd = charIndex + event.charLength;
+
+          // Check if the spoken word region overlaps any highlight
+          const activeHighlight = highlights.find(
+            h => charIndex <= h.startIndex && charEnd >= h.endIndex ||
+                 charIndex >= h.startIndex && charIndex < h.endIndex ||
+                 charEnd > h.startIndex && charEnd <= h.endIndex
+          );
+
+          if (activeHighlight) {
+            setActiveHighlightWord(activeHighlight.word);
+            // Clear after a short duration
+            setTimeout(() => setActiveHighlightWord(null), 800);
+          }
+        }
+      };
+    }
+
+    // Progress bar
     const wordCount = slide.speech.split(' ').length;
-    const estimatedDuration = (wordCount / 2.5) * 1000; // ~150 wpm
+    const estimatedDuration = (wordCount / 2.5) * 1000;
     const startTime = Date.now();
 
     progressIntervalRef.current = window.setInterval(() => {
@@ -57,6 +83,7 @@ export const PlaybackMode: React.FC<PlaybackModeProps> = ({ slides, onExit }) =>
 
     utterance.onend = () => {
       setProgress(100);
+      setActiveHighlightWord(null);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       setTimeout(() => {
         if (index < slides.length - 1) {
@@ -114,7 +141,6 @@ export const PlaybackMode: React.FC<PlaybackModeProps> = ({ slides, onExit }) =>
 
   return (
     <div className="fixed inset-0 z-50 bg-playback-bg flex flex-col">
-      {/* Close button */}
       <button
         onClick={() => { stopSpeech(); onExit(); }}
         className="absolute top-4 right-4 z-10 p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 text-playback-fg transition-colors"
@@ -122,16 +148,13 @@ export const PlaybackMode: React.FC<PlaybackModeProps> = ({ slides, onExit }) =>
         <X className="h-5 w-5" />
       </button>
 
-      {/* Slide */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-5xl">
-          <SlideCanvas slide={currentSlide} />
+          <SlideCanvas slide={currentSlide} activeHighlightWord={activeHighlightWord} />
         </div>
       </div>
 
-      {/* Controls */}
       <div className="pb-8 px-8">
-        {/* Progress bar */}
         <div className="max-w-5xl mx-auto mb-4">
           <div className="h-1 bg-foreground/10 rounded-full overflow-hidden">
             <div
@@ -144,7 +167,6 @@ export const PlaybackMode: React.FC<PlaybackModeProps> = ({ slides, onExit }) =>
           </div>
         </div>
 
-        {/* Control buttons */}
         <div className="flex items-center justify-center gap-3">
           <button
             onClick={handlePrev}
