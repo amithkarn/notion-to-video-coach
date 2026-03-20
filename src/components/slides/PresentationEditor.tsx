@@ -155,6 +155,7 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
       speech: '',
       sourceNodeIndices: sourceToMove,
       layout: 'default',
+      speechHighlights: [],
     };
 
     const updated = [...slides];
