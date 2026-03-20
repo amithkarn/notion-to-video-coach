@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Slide } from '@/types/editor';
 import { SlideCanvas } from './SlideCanvas';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { tiptapToBlocks } from '@/lib/slideGenerator';
+import katex from 'katex';
 
 interface PresentationEditorProps {
   slides: Slide[];
   onSlidesChange: (slides: Slide[]) => void;
+  pageContent?: string;
 }
 
-export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, onSlidesChange }) => {
+export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, onSlidesChange, pageContent }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [sidebarView, setSidebarView] = useState<'slides' | 'page'>('slides');
+
+  const pageBlocks = useMemo(() => {
+    if (!pageContent) return [];
+    try {
+      const doc = JSON.parse(pageContent);
+      return tiptapToBlocks(doc);
+    } catch {
+      return [];
+    }
+  }, [pageContent]);
 
   if (slides.length === 0) {
     return (
@@ -20,6 +34,7 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
   }
 
   const currentSlide = slides[currentIndex];
+  const highlightedIndices = new Set(currentSlide.sourceNodeIndices || []);
 
   const updateSpeech = (speech: string) => {
     const updated = slides.map((s, i) => (i === currentIndex ? { ...s, speech } : s));
@@ -28,26 +43,107 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
 
   return (
     <div className="flex flex-col h-full">
-      {/* Slide thumbnails + canvas */}
       <div className="flex flex-1 min-h-0">
-        {/* Thumbnail sidebar */}
-        <div className="w-48 border-r border-border overflow-y-auto bg-surface-sunken p-2 space-y-2">
-          {slides.map((slide, i) => (
-            <button
-              key={slide.id}
-              onClick={() => setCurrentIndex(i)}
-              className={`w-full p-2 rounded-lg text-left text-xs transition-colors ${
-                i === currentIndex
-                  ? 'bg-primary/10 border border-primary/30'
-                  : 'bg-surface-elevated border border-transparent hover:border-border'
-              }`}
-            >
-              <div className="text-muted-foreground mb-1">Slide {i + 1}</div>
-              <div className="truncate text-foreground">
-                {slide.blocks[0]?.content || 'Empty slide'}
+        {/* Sidebar */}
+        <div className="w-64 border-r border-border flex flex-col bg-surface-sunken">
+          <div className="flex-1 overflow-y-auto p-2 space-y-2">
+            {sidebarView === 'slides' ? (
+              slides.map((slide, i) => (
+                <button
+                  key={slide.id}
+                  onClick={() => setCurrentIndex(i)}
+                  className={`w-full p-2 rounded-lg text-left text-xs transition-colors ${
+                    i === currentIndex
+                      ? 'bg-primary/10 border border-primary/30'
+                      : 'bg-surface-elevated border border-transparent hover:border-border'
+                  }`}
+                >
+                  <div className="text-muted-foreground mb-1">Slide {i + 1}</div>
+                  <div className="truncate text-foreground">
+                    {slide.blocks[0]?.content || 'Empty slide'}
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="text-xs space-y-1 p-1">
+                {pageBlocks.map((block, i) => {
+                  const isHighlighted = highlightedIndices.has(i);
+                  const baseClass = `rounded px-2 py-1.5 transition-colors ${
+                    isHighlighted
+                      ? 'bg-primary/15 border-l-2 border-primary'
+                      : 'opacity-50'
+                  }`;
+
+                  if (block.type === 'heading') {
+                    return (
+                      <div key={i} className={baseClass}>
+                        <p className="font-bold text-foreground text-sm">{block.content}</p>
+                      </div>
+                    );
+                  }
+                  if (block.type === 'text') {
+                    return (
+                      <div key={i} className={baseClass}>
+                        <p className="text-foreground/80 leading-snug">{block.content}</p>
+                      </div>
+                    );
+                  }
+                  if (block.type === 'math') {
+                    try {
+                      return (
+                        <div
+                          key={i}
+                          className={baseClass}
+                          dangerouslySetInnerHTML={{
+                            __html: katex.renderToString(block.content || '', {
+                              displayMode: true,
+                              throwOnError: false,
+                            }),
+                          }}
+                        />
+                      );
+                    } catch {
+                      return null;
+                    }
+                  }
+                  if (block.type === 'image' && block.content) {
+                    return (
+                      <div key={i} className={baseClass}>
+                        <img src={block.content} alt="" className="max-h-16 rounded object-contain" />
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
               </div>
-            </button>
-          ))}
+            )}
+          </div>
+
+          {/* Toggle at bottom */}
+          <div className="border-t border-border p-2">
+            <div className="flex bg-secondary rounded-lg p-0.5">
+              <button
+                onClick={() => setSidebarView('slides')}
+                className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  sidebarView === 'slides'
+                    ? 'bg-surface-elevated shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Slides
+              </button>
+              <button
+                onClick={() => setSidebarView('page')}
+                className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  sidebarView === 'page'
+                    ? 'bg-surface-elevated shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Page
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Main canvas */}
