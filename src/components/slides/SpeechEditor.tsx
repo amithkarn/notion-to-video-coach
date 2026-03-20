@@ -177,7 +177,7 @@ export const SpeechEditor: React.FC<SpeechEditorProps> = ({
 
 
       {/* Text area with highlight overlay */}
-      <div className="relative">
+      <div className="relative bg-surface-elevated rounded-lg border border-speech-border">
         {/* Highlight overlay */}
         <div
           ref={overlayRef}
@@ -195,7 +195,7 @@ export const SpeechEditor: React.FC<SpeechEditorProps> = ({
           onSelect={handleSelect}
           onScroll={handleScroll}
           rows={3}
-          className="w-full bg-surface-elevated border border-speech-border rounded-lg p-3 text-sm resize-none outline-none focus:ring-2 focus:ring-ring/20 relative"
+          className="w-full bg-transparent rounded-lg p-3 text-sm resize-none outline-none focus:ring-2 focus:ring-ring/20 relative"
           placeholder="Speech narration for this slide..."
         />
 
