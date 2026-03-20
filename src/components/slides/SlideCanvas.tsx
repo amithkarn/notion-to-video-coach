@@ -70,7 +70,7 @@ function renderTextWithHighlights(
 export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockIds, onBlockClick, activeHighlightWord }) => {
   const layout = slide.layout || 'default';
   const isInteractive = !!onBlockClick;
-  const highlightedWords = getHighlightedWords(slide.speechHighlights || []);
+  const highlights = slide.speechHighlights || [];
   const activeWord = activeHighlightWord ?? null;
 
   return (
