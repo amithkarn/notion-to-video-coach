@@ -85,13 +85,11 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           onBlockClick?.(block.id, e);
         };
 
-        const blockHighlightedWords = getHighlightedWordsForBlock(highlights, block.id);
-
         if (block.type === 'heading') {
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <h2 className="text-3xl font-bold mb-4 text-foreground">
-                {renderTextWithHighlights(block.content, blockHighlightedWords, activeWord)}
+                {renderTextWithHighlights(block.content, block.id, highlights, activeWord)}
               </h2>
             </div>
           );
@@ -100,7 +98,7 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <p className="text-lg leading-relaxed mb-3 text-foreground/80">
-                {renderTextWithHighlights(block.content, blockHighlightedWords, activeWord)}
+                {renderTextWithHighlights(block.content, block.id, highlights, activeWord)}
               </p>
             </div>
           );

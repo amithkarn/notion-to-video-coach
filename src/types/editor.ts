@@ -8,6 +8,9 @@ export interface SpeechHighlight {
   endIndex: number;
   word: string;
   blockId?: string;
+  /** Character offset of this specific word occurrence within the block's content */
+  blockCharStart?: number;
+  blockCharEnd?: number;
 }
 
 export interface Block {
