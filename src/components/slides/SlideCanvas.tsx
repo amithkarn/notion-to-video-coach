@@ -6,9 +6,17 @@ interface SlideCanvasProps {
   slide: Slide;
 }
 
+const layoutClasses: Record<string, string> = {
+  default: 'justify-center items-start text-left',
+  centered: 'justify-center items-center text-center',
+  'title-top': 'justify-start items-start text-left pt-12',
+};
+
 export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide }) => {
+  const layout = slide.layout || 'default';
+
   return (
-    <div className="aspect-video bg-slide-canvas rounded-xl border border-slide-border shadow-lg p-8 flex flex-col justify-center overflow-hidden">
+    <div className={`aspect-video bg-slide-canvas rounded-xl border border-slide-border shadow-lg p-8 flex flex-col overflow-hidden ${layoutClasses[layout]}`}>
       {slide.blocks.map((block) => {
         if (block.type === 'heading') {
           return (

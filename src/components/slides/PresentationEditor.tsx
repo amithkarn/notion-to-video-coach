@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Slide } from '@/types/editor';
+import { Slide, SlideLayout } from '@/types/editor';
 import { SlideCanvas } from './SlideCanvas';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, AlignLeft, AlignCenter, AlignVerticalJustifyStart } from 'lucide-react';
 import { tiptapToBlocks } from '@/lib/slideGenerator';
 import katex from 'katex';
 
@@ -40,6 +40,17 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
     const updated = slides.map((s, i) => (i === currentIndex ? { ...s, speech } : s));
     onSlidesChange(updated);
   };
+
+  const updateLayout = (layout: SlideLayout) => {
+    const updated = slides.map((s, i) => (i === currentIndex ? { ...s, layout } : s));
+    onSlidesChange(updated);
+  };
+
+  const layouts: { value: SlideLayout; icon: React.ReactNode; label: string }[] = [
+    { value: 'default', icon: <AlignLeft className="h-3.5 w-3.5" />, label: 'Left' },
+    { value: 'centered', icon: <AlignCenter className="h-3.5 w-3.5" />, label: 'Center' },
+    { value: 'title-top', icon: <AlignVerticalJustifyStart className="h-3.5 w-3.5" />, label: 'Top' },
+  ];
 
   return (
     <div className="flex h-full">
@@ -147,8 +158,28 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({ slides, 
 
         {/* Right content area */}
         <div className="flex-1 flex flex-col min-h-0">
+          {/* Layout picker */}
+          <div className="flex items-center justify-end px-8 pt-4">
+            <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
+              {layouts.map((l) => (
+                <button
+                  key={l.value}
+                  onClick={() => updateLayout(l.value)}
+                  title={l.label}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    currentSlide.layout === l.value
+                      ? 'bg-surface-elevated shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {l.icon}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Main canvas */}
-          <div className="flex-1 flex items-center justify-center bg-secondary/30 p-8">
+          <div className="flex-1 flex items-center justify-center bg-secondary/30 px-8 pb-8 pt-4">
             <div className="w-full max-w-3xl">
               <SlideCanvas slide={currentSlide} />
             </div>
