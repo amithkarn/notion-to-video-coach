@@ -101,7 +101,7 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <p className="text-lg leading-relaxed mb-3 text-foreground/80">
-                {renderTextWithHighlights(block.content, block.id, highlights, activeWord)}
+                {renderTextWithHighlights(block.content, block.id, highlights, activeWord, playbackMode)}
               </p>
             </div>
           );
