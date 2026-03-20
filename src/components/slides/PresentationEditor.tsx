@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Slide } from '@/types/editor';
+import { Slide, SlideLayout } from '@/types/editor';
 import { SlideCanvas } from './SlideCanvas';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, AlignLeft, AlignCenter, AlignVerticalJustifyStart } from 'lucide-react';
 import { tiptapToBlocks } from '@/lib/slideGenerator';
 import katex from 'katex';
 
