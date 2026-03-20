@@ -2,6 +2,13 @@ export type BlockType = 'heading' | 'text' | 'image' | 'math';
 
 export type SlideLayout = 'default' | 'centered' | 'title-top';
 
+export interface SpeechHighlight {
+  id: string;
+  startIndex: number;
+  endIndex: number;
+  word: string;
+}
+
 export interface Block {
   id: string;
   type: BlockType;
@@ -14,6 +21,7 @@ export interface Slide {
   speech: string;
   sourceNodeIndices: number[];
   layout: SlideLayout;
+  speechHighlights: SpeechHighlight[];
 }
 
 export interface Presentation {
