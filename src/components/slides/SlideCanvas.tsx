@@ -15,53 +15,48 @@ const layoutClasses: Record<string, string> = {
   'title-top': 'justify-start items-start text-left pt-12',
 };
 
-/** Get highlighted words for a specific block */
-function getHighlightedWordsForBlock(highlights: SpeechHighlight[], blockId: string): string[] {
-  const words = new Set(
-    highlights
-      .filter(h => h.blockId === blockId)
-      .map(h => h.word.toLowerCase())
-  );
-  return Array.from(words);
+/** Get highlight positions for a specific block (exact char ranges) */
+function getBlockHighlightRanges(highlights: SpeechHighlight[], blockId: string): { start: number; end: number; word: string }[] {
+  return highlights
+    .filter(h => h.blockId === blockId && h.blockCharStart !== undefined && h.blockCharEnd !== undefined)
+    .map(h => ({ start: h.blockCharStart!, end: h.blockCharEnd!, word: h.word }))
+    .sort((a, b) => a.start - b.start);
 }
 
-/** Render text content with highlighted words wrapped in <mark> */
+/** Render text with highlights at specific character positions */
 function renderTextWithHighlights(
   text: string,
-  highlightedWords: string[],
+  blockId: string,
+  highlights: SpeechHighlight[],
   activeWord: string | null
 ): React.ReactNode {
-  if (highlightedWords.length === 0) return text;
-
-  // Build regex from highlighted words (case insensitive, whole word)
-  const escaped = highlightedWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const regex = new RegExp(`\\b(${escaped.join('|')})\\b`, 'gi');
+  const ranges = getBlockHighlightRanges(highlights, blockId);
+  if (ranges.length === 0) return text;
 
   const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
+  let lastEnd = 0;
 
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
+  for (const range of ranges) {
+    if (range.start > lastEnd) {
+      parts.push(text.slice(lastEnd, range.start));
     }
-    const matchedWord = match[0];
-    const isActive = activeWord && matchedWord.toLowerCase() === activeWord.toLowerCase();
+    const matchedText = text.slice(range.start, range.end);
+    const isActive = activeWord && matchedText.toLowerCase() === activeWord.toLowerCase();
     parts.push(
       <mark
-        key={`${match.index}-${matchedWord}`}
+        key={`${range.start}-${matchedText}`}
         className={`bg-primary/20 text-inherit rounded-sm px-0.5 transition-all duration-300 ${
           isActive ? 'bg-primary/50 scale-105 inline-block' : ''
         }`}
       >
-        {matchedWord}
+        {matchedText}
       </mark>
     );
-    lastIndex = regex.lastIndex;
+    lastEnd = range.end;
   }
 
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
+  if (lastEnd < text.length) {
+    parts.push(text.slice(lastEnd));
   }
 
   return parts.length > 0 ? <>{parts}</> : text;
@@ -90,13 +85,11 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           onBlockClick?.(block.id, e);
         };
 
-        const blockHighlightedWords = getHighlightedWordsForBlock(highlights, block.id);
-
         if (block.type === 'heading') {
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <h2 className="text-3xl font-bold mb-4 text-foreground">
-                {renderTextWithHighlights(block.content, blockHighlightedWords, activeWord)}
+                {renderTextWithHighlights(block.content, block.id, highlights, activeWord)}
               </h2>
             </div>
           );
@@ -105,7 +98,7 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ slide, selectedBlockId
           return (
             <div key={block.id} className={`${wrapperClass} px-2 py-1`} onClick={handleClick}>
               <p className="text-lg leading-relaxed mb-3 text-foreground/80">
-                {renderTextWithHighlights(block.content, blockHighlightedWords, activeWord)}
+                {renderTextWithHighlights(block.content, block.id, highlights, activeWord)}
               </p>
             </div>
           );
